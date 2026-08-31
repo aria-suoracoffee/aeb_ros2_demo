@@ -13,10 +13,11 @@ is declared invalid.
 
 import numpy as np
 import rclpy
+from nav_msgs.msg import Odometry
 from rclpy.node import Node
 
 from aeb_interfaces.msg import Hazard, Measurement
-from aeb_demo.fusion import RangeRateKF
+from aeb_demo.fusion import RangeRateKF, range_measurement
 
 NO_TARGET = 1000.0
 
@@ -24,13 +25,14 @@ NO_TARGET = 1000.0
 class FusionNode(Node):
     def __init__(self):
         super().__init__("fusion_node")
-        self.declare_parameter("sigma_a", 3.0)        # m/s^2 process noise
+        self.declare_parameter("sigma_a", 4.0)        # m/s^2, unknown lead accel
         self.declare_parameter("gate_chi2", 9.21)     # 2-dof, ~99%
         self.declare_parameter("coast_timeout", 0.6)  # s
         self.declare_parameter("drop_timeout", 1.5)   # s
         self.declare_parameter("publish_rate", 50.0)  # Hz
         self.declare_parameter("r_var_init", 4.0)
         self.declare_parameter("c_var_init", 100.0)
+        self.declare_parameter("accel_alpha", 0.3)    # smoothing on the ego accel estimate
 
         g = self.get_parameter
         self.kf = RangeRateKF(
@@ -42,11 +44,29 @@ class FusionNode(Node):
         self.last_update_t = None     # time of the last accepted measurement
         self.fresh = {"lidar": 0.0, "radar": 0.0}
 
+        # Ego motion -> control input for the predict step.
+        self.v_ego = 0.0
+        self.a_ego = 0.0
+        self.odom_t = None
+
         self.hazard_pub = self.create_publisher(Hazard, "aeb/hazard", 10)
+        self.create_subscription(Odometry, "ego/odom", self._on_odom, 10)
         self.create_subscription(Measurement, "aeb/meas/lidar", self._on_meas, 10)
         self.create_subscription(Measurement, "aeb/meas/radar", self._on_meas, 10)
         self.create_timer(1.0 / float(g("publish_rate").value), self._tick)
         self.get_logger().info("fusion_node up")
+
+    def _on_odom(self, m: Odometry):
+        v = float(m.twist.twist.linear.x)
+        t = m.header.stamp.sec + m.header.stamp.nanosec * 1e-9
+        if self.odom_t is not None:
+            dt = t - self.odom_t
+            if dt > 1e-3:
+                a = (v - self.v_ego) / dt
+                alpha = float(self.get_parameter("accel_alpha").value)
+                self.a_ego += alpha * (a - self.a_ego)
+        self.v_ego = v
+        self.odom_t = t
 
     # ------------------------------------------------------------------ time
     def _now(self) -> float:
@@ -54,7 +74,7 @@ class FusionNode(Node):
 
     def _predict_to(self, t: float) -> None:
         if self.last_t is not None:
-            self.kf.predict(t - self.last_t)
+            self.kf.predict(t - self.last_t, a_ego=self.a_ego)
         self.last_t = t
 
     # ----------------------------------------------------------- measurement
@@ -85,11 +105,16 @@ class FusionNode(Node):
                 self.fresh[m.source] = self._now()
             return
 
+        gate = float(self.get_parameter("gate_chi2").value)
         self._predict_to(t)
-        ok = self.kf.update(
-            np.array(z), np.array(rows), np.diag(diag),
-            gate2=float(self.get_parameter("gate_chi2").value),
-        )
+        ok = self.kf.update(np.array(z), np.array(rows), np.diag(diag), gate2=gate)
+
+        if not ok and m.has_range and len(rows) > 1:
+            # Joint gate failed -- fall back to the safety-critical range alone.
+            ok = self.kf.update(*range_measurement(m.range, m.range_var), gate2=gate)
+            if ok:
+                self.get_logger().info(f"{m.source}: rate rejected, range accepted")
+
         if ok:
             self.last_update_t = t
             self.fresh[m.source] = self._now()

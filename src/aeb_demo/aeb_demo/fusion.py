@@ -36,14 +36,23 @@ class RangeRateKF:
         self.x = None
         self.P = None
 
-    def predict(self, dt: float) -> None:
+    def predict(self, dt: float, a_ego: float = 0.0) -> None:
+        """Propagate the state.
+
+        `a_ego` is the ego's own longitudinal acceleration (< 0 when braking),
+        used as a *known control input*: closing_speed changes by (a_ego - a_lead)
+        per second, and a_lead is the only unknown -> it becomes the process
+        noise (`sigma_a`). Without this term the filter fights the very braking
+        manoeuvre AEB commanded and rejects the measurements that disagree.
+        """
         if not self.initialized or dt <= 0.0:
             return
         F = np.array([[1.0, -dt], [0.0, 1.0]])
-        # Acceleration noise w over dt:  closing += w*dt,  range += -0.5*w*dt^2
-        g = np.array([-0.5 * dt * dt, dt])
+        B = np.array([-0.5 * dt * dt, dt])          # coefficient of a_ego
+        g = np.array([0.5 * dt * dt, -dt])          # coefficient of unknown a_lead
         Q = np.outer(g, g) * self.sigma_a ** 2
-        self.x = F @ self.x
+        self.x = F @ self.x + B * float(a_ego)
+        self.x[0] = max(self.x[0], 0.0)             # range cannot go negative
         self.P = F @ self.P @ F.T + Q
 
     def mahalanobis2(self, z: np.ndarray, H: np.ndarray, R: np.ndarray) -> float:

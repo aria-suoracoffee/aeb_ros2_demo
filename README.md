@@ -179,8 +179,13 @@ python3 -m pytest src/aeb_demo/test -q
   lidar's differenced rate is ~4 (m/s)². The Kalman gain therefore takes range
   mostly from lidar and closing speed mostly from radar — automatically, from
   the reported variances, with no hand-tuned switch.
-* **Model.** State `[range, closing_speed]`, constant closing speed, unmodelled
-  acceleration as process noise (`sigma_a`). `F = [[1, −dt], [0, 1]]`.
+* **Model.** State `[range, closing_speed]`. `F = [[1, −dt], [0, 1]]`.
+* **Ego acceleration as a control input.** `fusion_node` differentiates
+  `/ego/odom` and feeds the ego's own deceleration into the predict step
+  (`closing_speed` changes by `a_ego − a_lead` per second; only `a_lead` is
+  unknown, so it is the process noise `sigma_a`). Without this the constant-
+  velocity model fights the braking manoeuvre AEB just commanded, the
+  predictions diverge from the measurements, and the gate rejects the truth.
 * **Outlier gating.** Every measurement is checked against the predicted state
   with a Mahalanobis distance; `d² > gate_chi2` (9.21, 2-dof 99%) is rejected.
   This is what drops the radar false alarms without a separate filter.

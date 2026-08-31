@@ -36,6 +36,23 @@ def test_predict_grows_uncertainty():
     assert np.trace(kf.P) > before
 
 
+def test_constant_velocity_model_holds_closing_speed():
+    kf = make_kf()
+    kf.x[1] = 14.0
+    for _ in range(50):
+        kf.predict(0.02)                 # no control input
+    assert abs(kf.closing_speed - 14.0) < 0.1
+
+
+def test_control_input_tracks_ego_braking():
+    kf = make_kf()
+    kf.x[1] = 14.0
+    for _ in range(50):                   # ego brakes at 8 m/s^2 for 1 s
+        kf.predict(0.02, a_ego=-8.0)
+    assert 5.0 < kf.closing_speed < 7.0   # dropped ~8 m/s, not held at 14
+    assert kf.range >= 0.0
+
+
 def test_range_only_updates_pull_range_and_shrink_variance():
     kf = make_kf()
     var_before = kf.P[0, 0]
