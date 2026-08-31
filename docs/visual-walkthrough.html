@@ -119,8 +119,8 @@
     <div class="figcard">
       <figure>
         <div class="scroll">
-        <svg viewBox="0 0 920 460" role="img" class="svg-sans"
-             aria-label="sim_node produces /scan, /radar and /ego/odom. perception_node turns /scan into /aeb/meas/lidar; radar_node turns /radar into /aeb/meas/radar. fusion_node combines both measurements plus /ego/odom into /aeb/hazard. aeb_node takes /aeb/hazard and /driver/cmd_vel and outputs /cmd_vel back to sim_node.">
+        <svg viewBox="0 0 1000 470" role="img" class="svg-sans"
+             aria-label="sim_node publishes /scan, /radar and /ego/odom. perception_node turns /scan into /aeb/meas/lidar; radar_node turns /radar into /aeb/meas/radar. fusion_node combines both measurements plus /ego/odom into /aeb/hazard. aeb_node takes /aeb/hazard, /ego/odom and /driver/cmd_vel and outputs /cmd_vel back to sim_node.">
           <defs>
             <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
               <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
@@ -128,65 +128,67 @@
           </defs>
 
           <g class="svg-mono" font-size="12" fill="var(--muted)" letter-spacing="1.5">
-            <text x="230" y="24" text-anchor="middle">SENSE</text>
-            <text x="600" y="24" text-anchor="middle">FUSE</text>
-            <text x="815" y="24" text-anchor="middle">DECIDE / ACT</text>
+            <text x="255" y="22" text-anchor="middle">SENSE</text>
+            <text x="625" y="22" text-anchor="middle">FUSE</text>
+            <text x="880" y="22" text-anchor="middle">DECIDE / ACT</text>
           </g>
           <g stroke="var(--line)" stroke-width="1">
-            <line x1="500" y1="36" x2="500" y2="400"/>
-            <line x1="712" y1="36" x2="712" y2="400"/>
+            <line x1="490" y1="34" x2="490" y2="430"/>
+            <line x1="765" y1="34" x2="765" y2="430"/>
           </g>
 
           <!-- plant -->
-          <rect x="40" y="182" width="120" height="112" rx="9"
+          <rect x="40" y="188" width="126" height="116" rx="9"
                 fill="color-mix(in srgb, var(--muted) 12%, var(--surface))"
                 stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="5 4"/>
-          <text x="100" y="232" text-anchor="middle" font-size="13.5" font-weight="600" fill="var(--ink)">sim_node</text>
-          <text x="100" y="251" text-anchor="middle" font-size="10.5" fill="var(--muted)">plant: ego +</text>
-          <text x="100" y="266" text-anchor="middle" font-size="10.5" fill="var(--muted)">lead + sensors</text>
+          <text x="103" y="238" text-anchor="middle" font-size="13.5" font-weight="600" fill="var(--ink)">sim_node</text>
+          <text x="103" y="257" text-anchor="middle" font-size="10.5" fill="var(--muted)">plant: ego +</text>
+          <text x="103" y="272" text-anchor="middle" font-size="10.5" fill="var(--muted)">lead + sensors</text>
 
           <!-- sensor nodes -->
-          <rect x="300" y="90" width="150" height="50" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8"/>
-          <text x="375" y="120" text-anchor="middle" font-size="12.5" font-weight="600" fill="var(--accent-ink)">perception_node</text>
-          <rect x="300" y="175" width="150" height="50" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8"/>
-          <text x="375" y="205" text-anchor="middle" font-size="12.5" font-weight="600" fill="var(--accent-ink)">radar_node</text>
+          <rect x="290" y="96" width="156" height="48" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8"/>
+          <text x="368" y="125" text-anchor="middle" font-size="12.5" font-weight="600" fill="var(--accent-ink)">perception_node</text>
+          <rect x="290" y="186" width="156" height="48" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8"/>
+          <text x="368" y="215" text-anchor="middle" font-size="12.5" font-weight="600" fill="var(--accent-ink)">radar_node</text>
 
           <!-- fusion -->
-          <rect x="530" y="120" width="150" height="66" rx="8" fill="color-mix(in srgb, var(--fuse) 12%, var(--surface))" stroke="var(--fuse)" stroke-width="2"/>
-          <text x="605" y="149" text-anchor="middle" font-size="13" font-weight="700" fill="var(--fuse-ink)">fusion_node</text>
-          <text x="605" y="167" text-anchor="middle" font-size="10" fill="var(--muted)">Kalman filter</text>
+          <rect x="520" y="128" width="150" height="64" rx="8" fill="color-mix(in srgb, var(--fuse) 12%, var(--surface))" stroke="var(--fuse)" stroke-width="2"/>
+          <text x="595" y="156" text-anchor="middle" font-size="13" font-weight="700" fill="var(--fuse-ink)">fusion_node</text>
+          <text x="595" y="174" text-anchor="middle" font-size="10" fill="var(--muted)">Kalman filter</text>
 
           <!-- aeb -->
-          <rect x="740" y="120" width="150" height="66" rx="8" fill="color-mix(in srgb, var(--brake) 10%, var(--surface))" stroke="var(--brake)" stroke-width="2"/>
-          <text x="815" y="149" text-anchor="middle" font-size="13" font-weight="700" fill="var(--brake)">aeb_node</text>
-          <text x="815" y="167" text-anchor="middle" font-size="9.5" fill="var(--muted)">CLEAR / WARN / BRAKE</text>
+          <rect x="800" y="128" width="160" height="64" rx="8" fill="color-mix(in srgb, var(--brake) 10%, var(--surface))" stroke="var(--brake)" stroke-width="2"/>
+          <text x="880" y="156" text-anchor="middle" font-size="13" font-weight="700" fill="var(--brake)">aeb_node</text>
+          <text x="880" y="174" text-anchor="middle" font-size="9.5" fill="var(--muted)">CLEAR / WARN / BRAKE</text>
 
           <!-- driver -->
-          <rect x="740" y="290" width="150" height="44" rx="8" fill="var(--surface)" stroke="var(--muted)" stroke-width="1.5"/>
-          <text x="815" y="317" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink)">driver_node</text>
+          <rect x="800" y="300" width="160" height="44" rx="8" fill="var(--surface)" stroke="var(--muted)" stroke-width="1.5"/>
+          <text x="880" y="327" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink)">driver_node</text>
 
           <g fill="none" stroke="currentColor" stroke-width="1.6">
-            <path d="M160 150 H240 V115 H300" marker-end="url(#a1)"/>
-            <path d="M160 210 H240 V200 H300" marker-end="url(#a1)"/>
-            <path d="M160 272 H262 V153 H530" marker-end="url(#a1)"/>
-            <path d="M450 115 H492 V137 H530" marker-end="url(#a1)"/>
-            <path d="M450 200 H492 V169 H530" marker-end="url(#a1)"/>
-            <path d="M680 153 H740" marker-end="url(#a1)"/>
-            <path d="M815 290 V186" marker-end="url(#a1)"/>
-            <path d="M765 186 V424 H68 V294" marker-end="url(#a1)"/>
+            <path d="M166 156 H255 V120 H290" marker-end="url(#a1)"/>
+            <path d="M166 224 H255 V210 H290" marker-end="url(#a1)"/>
+            <path d="M166 284 H272 V160 H520" marker-end="url(#a1)"/>
+            <path d="M446 120 H486 V146 H520" marker-end="url(#a1)"/>
+            <path d="M446 210 H486 V176 H520" marker-end="url(#a1)"/>
+            <path d="M670 160 H800" marker-end="url(#a1)"/>
+            <path d="M880 300 V194" marker-end="url(#a1)"/>
+            <path d="M124 188 V80 H880 V128" marker-end="url(#a1)"/>
+            <path d="M822 192 V446 H66 V304" marker-end="url(#a1)"/>
           </g>
 
           <g class="svg-mono" font-size="10.5" fill="var(--muted)">
-            <text x="247" y="108">/scan</text>
-            <text x="247" y="235">/radar</text>
-            <text x="172" y="264">/ego/odom</text>
-            <text x="455" y="108">/aeb/meas/lidar</text>
-            <text x="455" y="238">/aeb/meas/radar</text>
-            <text x="685" y="145">/aeb/hazard</text>
-            <text x="742" y="255" text-anchor="end">/driver/cmd_vel</text>
-            <text x="410" y="418">/cmd_vel   (brake command, or driver cruise passed through)</text>
+            <text x="188" y="150">/scan</text>
+            <text x="188" y="218">/radar</text>
+            <text x="180" y="300">/ego/odom</text>
+            <text x="180" y="74">/ego/odom</text>
+            <text x="452" y="110">/aeb/meas/lidar</text>
+            <text x="452" y="254">/aeb/meas/radar</text>
+            <text x="735" y="150" text-anchor="middle">/aeb/hazard</text>
+            <text x="968" y="262" text-anchor="end">/driver/cmd_vel</text>
+            <text x="400" y="440">/cmd_vel  —  brake command, or the driver's cruise passed through</text>
           </g>
-          <text x="268" y="300" class="svg-mono" font-size="9.5" fill="var(--fuse-ink)">control input aₑ →</text>
+          <text x="300" y="153" class="svg-mono" font-size="9.5" fill="var(--fuse-ink)">aₑ  →  predict step</text>
         </svg>
         </div>
         <figcaption><b>The loop.</b> <code>sim_node</code> is the stand-in for the real vehicle
@@ -380,23 +382,21 @@
           <text x="775" y="159" text-anchor="middle" font-size="10.5" fill="var(--muted)">cmd = 0</text>
 
           <g fill="none" stroke="currentColor" stroke-width="1.7">
-            <path d="M200 135 H375" marker-end="url(#a4)"/>
-            <path d="M525 135 H700" marker-end="url(#a4)"/>
-            <path d="M450 174 C450 250, 125 250, 125 178" marker-end="url(#a4)"/>
-            <path d="M775 110 C775 46, 125 46, 125 106" marker-end="url(#a4)"/>
+            <path d="M200 142 H375" marker-end="url(#a4)"/>
+            <path d="M525 142 H700" marker-end="url(#a4)"/>
+            <path d="M450 174 C450 252, 125 252, 125 178" marker-end="url(#a4)"/>
+            <path d="M775 110 C775 44, 125 44, 125 106" marker-end="url(#a4)"/>
+            <path d="M792 174 C792 224, 862 224, 862 184 C862 160, 818 162, 804 172" marker-end="url(#a4)"/>
           </g>
-          <!-- self loop on BRAKE -->
-          <path d="M840 108 C885 80, 885 40, 830 40 C800 40, 792 74, 812 96" fill="none" stroke="currentColor" stroke-width="1.7" marker-end="url(#a4)"/>
 
-          <g font-size="11">
-            <text x="287" y="122" text-anchor="middle" fill="var(--ink)">TTC &lt; 2.0 s</text>
-            <text x="287" y="138" text-anchor="middle" fill="var(--muted)">or a_req &gt; 3.2</text>
-            <text x="612" y="122" text-anchor="middle" fill="var(--ink)">TTC &lt; 1.2 s</text>
-            <text x="612" y="138" text-anchor="middle" fill="var(--muted)">or a_req &gt; 5.6</text>
-            <text x="287" y="268" text-anchor="middle" fill="var(--muted)">signal recovers past 1.25× (hysteresis)</text>
-            <text x="450" y="38" text-anchor="middle" fill="var(--ink)">stopped &amp; obstacle cleared</text>
-            <text x="878" y="60" fill="var(--muted)">hold:</text>
-            <text x="820" y="26" text-anchor="middle" fill="var(--muted)">v_ego &gt; 0  or  obstacle &lt; 15 m</text>
+          <g font-size="11" text-anchor="middle">
+            <text x="287" y="119" fill="var(--ink)">TTC &lt; 2.0 s</text>
+            <text x="287" y="133" fill="var(--muted)">or  a_req &gt; 3.2</text>
+            <text x="612" y="119" fill="var(--ink)">TTC &lt; 1.2 s</text>
+            <text x="612" y="133" fill="var(--muted)">or  a_req &gt; 5.6</text>
+            <text x="270" y="285" fill="var(--muted)">signal recovers past 1.25× (hysteresis)</text>
+            <text x="450" y="34" fill="var(--ink)">stopped &amp; obstacle cleared</text>
+            <text x="792" y="250" fill="var(--muted)">hold: stopped &amp; obstacle &lt; 15 m</text>
           </g>
         </svg>
         </div>
