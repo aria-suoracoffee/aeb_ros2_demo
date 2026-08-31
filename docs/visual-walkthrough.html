@@ -166,24 +166,32 @@
           <text x="880" y="327" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink)">driver_node</text>
 
           <g fill="none" stroke="currentColor" stroke-width="1.6">
+            <!-- sim -> sensor nodes -->
             <path d="M166 156 H255 V120 H290" marker-end="url(#a1)"/>
             <path d="M166 224 H255 V210 H290" marker-end="url(#a1)"/>
-            <path d="M166 284 H272 V160 H520" marker-end="url(#a1)"/>
-            <path d="M446 120 H486 V146 H520" marker-end="url(#a1)"/>
-            <path d="M446 210 H486 V176 H520" marker-end="url(#a1)"/>
+            <!-- sim /ego/odom -> fusion (hugs sim, runs the gap between the sensor nodes) -->
+            <path d="M166 262 H196 V160 H518" marker-end="url(#a1)"/>
+            <!-- perception -> fusion (enters top) -->
+            <path d="M446 118 H580 V126" marker-end="url(#a1)"/>
+            <!-- radar -> fusion (enters bottom) -->
+            <path d="M446 216 H580 V194" marker-end="url(#a1)"/>
+            <!-- fusion -> aeb -->
             <path d="M670 160 H800" marker-end="url(#a1)"/>
+            <!-- driver -> aeb -->
             <path d="M880 300 V194" marker-end="url(#a1)"/>
-            <path d="M124 188 V80 H880 V128" marker-end="url(#a1)"/>
+            <!-- sim /ego/odom -> aeb (enters top) -->
+            <path d="M124 188 V80 H880 V126" marker-end="url(#a1)"/>
+            <!-- aeb /cmd_vel -> sim -->
             <path d="M822 192 V446 H66 V304" marker-end="url(#a1)"/>
           </g>
 
           <g class="svg-mono" font-size="10.5" fill="var(--muted)">
-            <text x="188" y="150">/scan</text>
-            <text x="188" y="218">/radar</text>
-            <text x="180" y="300">/ego/odom</text>
+            <text x="216" y="148">/scan</text>
+            <text x="216" y="204">/radar</text>
+            <text x="205" y="250">/ego/odom</text>
             <text x="180" y="74">/ego/odom</text>
-            <text x="452" y="110">/aeb/meas/lidar</text>
-            <text x="452" y="254">/aeb/meas/radar</text>
+            <text x="470" y="108">/aeb/meas/lidar</text>
+            <text x="470" y="238">/aeb/meas/radar</text>
             <text x="735" y="150" text-anchor="middle">/aeb/hazard</text>
             <text x="968" y="262" text-anchor="end">/driver/cmd_vel</text>
             <text x="400" y="440">/cmd_vel  —  brake command, or the driver's cruise passed through</text>
