@@ -1,0 +1,39 @@
+sim_node:
+  ros__parameters:
+    rate_hz: 50.0
+    scenario: stationary_lead        # stationary_lead | slower_lead | hard_brake
+    ego_start_speed: 14.0            # m/s (~50 km/h)
+    lead_start_gap: 60.0             # m, bumper to bumper
+    lead_speed: 0.0                  # m/s (used by slower_lead)
+    lead_brake_time: 4.0             # s  (hard_brake: when the lead starts braking)
+    lead_decel: 6.0                  # m/s^2 (hard_brake)
+    max_accel: 2.0
+    max_brake_decel: 8.0
+    car_length: 4.5
+    lead_width: 1.8
+    scan_range_max: 80.0
+    scan_fov_deg: 60.0
+    scan_rays: 121
+    scan_noise_std: 0.03
+
+perception_node:
+  ros__parameters:
+    path_half_angle_deg: 4.0
+    range_rate_alpha: 0.4
+    valid_margin: 0.98
+
+driver_node:
+  ros__parameters:
+    target_speed: 14.0
+    rate_hz: 20.0
+
+aeb_node:
+  ros__parameters:
+    max_brake_decel: 8.0
+    ttc_warn: 2.0
+    ttc_brake: 1.2
+    warn_decel_frac: 0.4
+    brake_decel_frac: 0.7
+    standoff: 2.0
+    stop_speed: 0.3
+    min_closing_speed: 0.2
