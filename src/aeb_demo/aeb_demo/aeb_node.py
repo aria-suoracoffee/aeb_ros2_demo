@@ -49,6 +49,12 @@ class AEBNode(Node):
         self.driver_target = max(0.0, float(msg.linear.x))
 
     def _on_hazard(self, hz: Hazard):
+        try:
+            self._control(hz)
+        except Exception as exc:
+            self.get_logger().error(f"control step failed: {exc!r}")
+
+    def _control(self, hz: Hazard):
         d = decide(
             self.state,
             hz.valid,
@@ -70,8 +76,8 @@ class AEBNode(Node):
         status.header = hz.header
         status.state = d.state
         status.state_label = STATE_LABELS[d.state]
-        status.ttc = hz.ttc
-        status.required_decel = min(d.required_decel, 99.9)
+        status.ttc = min(float(hz.ttc), 999.9)
+        status.required_decel = min(float(d.required_decel), 99.9)
         status.braking = d.brake_request
         self.status_pub.publish(status)
 
@@ -81,6 +87,14 @@ class AEBNode(Node):
                 f"ttc={hz.ttc:.2f}s  req_decel={d.required_decel:.1f} m/s^2  "
                 f"v_ego={self.ego_speed:.1f} m/s"
             )
+
+        # Heartbeat so the pipeline is visibly alive in the launch output.
+        self.get_logger().info(
+            f"[{STATE_LABELS[d.state]:5}] valid={hz.valid} range={hz.range:6.1f} "
+            f"v_close={hz.closing_speed:5.1f} ttc={min(hz.ttc, 999.9):6.1f} "
+            f"v_ego={self.ego_speed:5.1f} cmd={out.linear.x:4.1f}",
+            throttle_duration_sec=1.0,
+        )
 
 
 def main(args=None):

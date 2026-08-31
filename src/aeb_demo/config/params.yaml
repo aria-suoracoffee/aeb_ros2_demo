@@ -37,3 +37,5 @@ aeb_node:
     standoff: 2.0
     stop_speed: 0.3
     min_closing_speed: 0.2
+    hold_distance: 15.0
+    hysteresis: 1.25

@@ -9,9 +9,13 @@ can each request a brake (defense in depth):
                                      exceeds a fraction of the vehicle's
                                      braking capability.
 
-A brake request latches until the vehicle has actually stopped. That prevents
-the state from chattering back and forth right at the threshold, which is the
-behaviour a real AEB system is certified for.
+Two mechanisms keep the state stable:
+
+  * Hysteresis -- leaving a more-severe state needs the signal to recover past
+    a margin, so a noisy measurement sitting on the threshold does not chatter.
+  * Brake-hold -- once braking has brought the vehicle to a stop, the brake is
+    held while an obstacle is still close ahead (this is what a real "AEB stop
+    and hold" does); it releases only when the obstacle clears.
 """
 
 from __future__ import annotations
@@ -37,8 +41,12 @@ class AEBParams:
     warn_decel_frac: float = 0.4     # -      fraction of max_brake_decel -> WARN
     brake_decel_frac: float = 0.7    # -      fraction of max_brake_decel -> BRAKE
     standoff: float = 2.0            # m      target stopping margin to obstacle
-    stop_speed: float = 0.3          # m/s    "stopped" threshold for unlatching
+    stop_speed: float = 0.3          # m/s    "stopped" threshold
     min_closing_speed: float = 0.2   # m/s    ignore closing speed noise below this
+    hold_distance: float = 15.0      # m      hold the brake at a standstill while
+    #                                          an obstacle is within this range
+    hysteresis: float = 1.25         # -      signal must recover by this factor
+    #                                          before a state is downgraded
 
     def field_names(self):
         return [f.name for f in fields(self)]
@@ -86,12 +94,32 @@ def decide(
     ttc = time_to_collision(range_m, closing) if valid else math.inf
     req = required_deceleration(range_m, closing, p.standoff) if valid else 0.0
 
-    # Latch: once braking, keep braking until we have come to a stop.
-    if prev_state == BRAKE and ego_speed > p.stop_speed:
-        return Decision(BRAKE, True, 0.0, ttc, req)
+    stopped = ego_speed <= p.stop_speed
+    obstacle_close = valid and range_m < p.hold_distance
 
-    brake = (ttc < p.ttc_brake) or (req > p.brake_decel_frac * p.max_brake_decel)
-    warn = (ttc < p.ttc_warn) or (req > p.warn_decel_frac * p.max_brake_decel)
+    # --- brake latch / hold ---------------------------------------------------
+    if prev_state == BRAKE:
+        if not stopped:
+            return Decision(BRAKE, True, 0.0, ttc, req)       # still braking to a stop
+        if obstacle_close:
+            return Decision(BRAKE, True, 0.0, ttc, req)       # stop-and-hold
+        # obstacle has cleared -> fall through and release
+
+    warn_decel = p.warn_decel_frac * p.max_brake_decel
+    brake_decel = p.brake_decel_frac * p.max_brake_decel
+    h = p.hysteresis
+
+    # Entering a state uses the nominal threshold; staying in it (prev_state
+    # already at/above that level) uses a relaxed threshold.
+    if prev_state >= BRAKE:
+        brake = (ttc < p.ttc_brake * h) or (req > brake_decel / h)
+    else:
+        brake = (ttc < p.ttc_brake) or (req > brake_decel)
+
+    if prev_state >= WARN:
+        warn = (ttc < p.ttc_warn * h) or (req > warn_decel / h)
+    else:
+        warn = (ttc < p.ttc_warn) or (req > warn_decel)
 
     if brake:
         return Decision(BRAKE, True, 0.0, ttc, req)

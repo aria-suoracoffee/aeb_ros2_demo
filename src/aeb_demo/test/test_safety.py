@@ -73,6 +73,22 @@ def test_brake_latches_until_stopped():
                      ego_speed=3.0, p=P)
     assert latched.state == BRAKE
 
+    # Stopped and the obstacle is gone -> release.
     released = decide(BRAKE, valid=False, range_m=math.inf, closing_speed=0.0,
                       ego_speed=0.1, p=P)
     assert released.state == CLEAR
+
+
+def test_brake_holds_at_standstill_while_obstacle_present():
+    d = decide(BRAKE, valid=True, range_m=8.0, closing_speed=0.0,
+               ego_speed=0.1, p=P)
+    assert d.state == BRAKE
+    assert d.target_speed_override == 0.0
+
+
+def test_warn_hysteresis_prevents_chatter():
+    sig = dict(valid=True, range_m=90.0, closing_speed=22.0, ego_speed=22.0, p=P)
+    # Not severe enough to newly enter WARN from CLEAR...
+    assert decide(CLEAR, **sig).state == CLEAR
+    # ...but once in WARN, the same signal keeps it there instead of chattering.
+    assert decide(WARN, **sig).state == WARN
