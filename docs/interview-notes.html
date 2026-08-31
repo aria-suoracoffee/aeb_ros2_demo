@@ -1,0 +1,574 @@
+<title>AEB Project — Interview Notes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+
+<style>
+  :root {
+    --bg: #f2f4f2;
+    --surface: #ffffff;
+    --surface-2: #eaedec;
+    --ink: #141a1d;
+    --muted: #58616a;
+    --line: #dce1df;
+    --accent: #2f6690;
+    --accent-ink: #234e6e;
+    --clear: #2e8f66;
+    --warn: #b9781f;
+    --brake: #bf3a2d;
+    --shadow: 0 1px 2px rgba(20,26,29,.05), 0 10px 30px -16px rgba(20,26,29,.18);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d1013;
+      --surface: #14181c;
+      --surface-2: #1c2126;
+      --ink: #e6e9ec;
+      --muted: #98a1aa;
+      --line: #293037;
+      --accent: #6ba7d4;
+      --accent-ink: #9cc6e6;
+      --clear: #4cbe8b;
+      --warn: #e0a24c;
+      --brake: #e4594a;
+      --shadow: 0 1px 2px rgba(0,0,0,.45), 0 14px 36px -16px rgba(0,0,0,.65);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d1013;
+    --surface: #14181c;
+    --surface-2: #1c2126;
+    --ink: #e6e9ec;
+    --muted: #98a1aa;
+    --line: #293037;
+    --accent: #6ba7d4;
+    --accent-ink: #9cc6e6;
+    --clear: #4cbe8b;
+    --warn: #e0a24c;
+    --brake: #e4594a;
+    --shadow: 0 1px 2px rgba(0,0,0,.45), 0 14px 36px -16px rgba(0,0,0,.65);
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+    font-size: 17px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 46rem; margin: 0 auto; padding: 0 1.5rem 5rem; }
+
+  /* ---------- masthead ---------- */
+  .masthead {
+    border-bottom: 1px solid var(--line);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--accent) 8%, var(--bg)), var(--bg));
+  }
+  .masthead .wrap { padding-top: 3.2rem; padding-bottom: 2.4rem; }
+  .kicker {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: .72rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+    margin: 0 0 1rem;
+  }
+  h1 {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 600;
+    font-size: clamp(2.1rem, 6vw, 3.1rem);
+    line-height: 1.08;
+    letter-spacing: -.01em;
+    text-wrap: balance;
+    margin: 0 0 1rem;
+  }
+  .standfirst {
+    font-size: 1.06rem;
+    color: var(--muted);
+    max-width: 34rem;
+    margin: 0;
+  }
+
+  /* ---------- honesty note ---------- */
+  .note {
+    margin: 2.4rem 0 0;
+    padding: 1.15rem 1.3rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    box-shadow: var(--shadow);
+    font-size: .96rem;
+  }
+  .note strong { font-weight: 600; }
+
+  /* ---------- sections ---------- */
+  section { margin-top: 3.4rem; }
+  .sec-head {
+    display: flex;
+    align-items: baseline;
+    gap: .8rem;
+    margin-bottom: 1rem;
+    padding-bottom: .5rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .sec-num {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: .8rem;
+    font-weight: 500;
+    color: var(--accent-ink);
+    letter-spacing: .04em;
+  }
+  h2 {
+    font-family: "IBM Plex Sans", sans-serif;
+    font-weight: 700;
+    font-size: 1.28rem;
+    letter-spacing: -.005em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 1.8rem 0 .4rem;
+  }
+  p { margin: .8rem 0; }
+  a { color: var(--accent-ink); text-underline-offset: 2px; }
+
+  ul { margin: .8rem 0; padding-left: 1.1rem; }
+  li { margin: .4rem 0; }
+  li::marker { color: var(--accent); }
+
+  code, .mono {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: .88em;
+  }
+  p code, li code, td code {
+    background: var(--surface-2);
+    padding: .08em .38em;
+    border-radius: 3px;
+  }
+
+  .say {
+    font-family: "Fraunces", Georgia, serif;
+    font-weight: 500;
+    font-size: 1.16rem;
+    line-height: 1.5;
+    color: var(--ink);
+    border-left: 3px solid var(--clear);
+    padding: .2rem 0 .2rem 1.1rem;
+    margin: 1.1rem 0;
+  }
+
+  /* ---------- formula blocks ---------- */
+  .formula {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    padding: 1rem 1.15rem;
+    margin: 1rem 0;
+    box-shadow: var(--shadow);
+  }
+  .formula .eq {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: .95rem;
+    color: var(--ink);
+    overflow-x: auto;
+  }
+  .formula .gloss { font-size: .86rem; color: var(--muted); margin: .5rem 0 0; }
+
+  /* ---------- tables ---------- */
+  .tbl-scroll { overflow-x: auto; margin: 1rem 0; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: .9rem;
+    min-width: 30rem;
+  }
+  th, td {
+    text-align: left;
+    padding: .55rem .7rem;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  th {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: .72rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.mono, th.mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+
+  /* ---------- state machine ---------- */
+  .fsm {
+    margin: 1.4rem 0;
+    padding: 1.3rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    box-shadow: var(--shadow);
+  }
+  .fsm svg { width: 100%; height: auto; display: block; }
+  .fsm text { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+
+  /* ---------- Q&A ---------- */
+  .qa { margin: 1.3rem 0; }
+  .qa .q {
+    font-weight: 600;
+    margin: 0 0 .3rem;
+  }
+  .qa .q::before {
+    content: "Q";
+    font-family: "IBM Plex Mono", monospace;
+    color: var(--accent-ink);
+    margin-right: .55rem;
+    font-size: .85em;
+  }
+  .qa .a { margin: 0 0 1.4rem; color: var(--muted); }
+  .qa .a::before {
+    content: "A";
+    font-family: "IBM Plex Mono", monospace;
+    color: var(--clear);
+    margin-right: .55rem;
+    font-size: .85em;
+  }
+
+  .chips { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1rem 0; }
+  .chip {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: .78rem;
+    padding: .3rem .6rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--ink);
+  }
+
+  footer {
+    margin-top: 4rem;
+    padding-top: 1.4rem;
+    border-top: 1px solid var(--line);
+    font-size: .82rem;
+    color: var(--muted);
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+  }
+
+  @media (max-width: 30rem) {
+    body { font-size: 16px; }
+    .wrap { padding-left: 1.1rem; padding-right: 1.1rem; }
+  }
+</style>
+
+<header class="masthead">
+  <div class="wrap">
+    <p class="kicker">ROS 2 · ADAS · System Engineering</p>
+    <h1>Automatic Emergency Braking, built to talk about</h1>
+    <p class="standfirst">A field guide to the AEB demo project — what it does, why each
+      design decision was made, and the questions to expect. Read it until you can redraw
+      the node graph, re-derive the two brake gates, and sketch the Kalman filter on a
+      whiteboard.</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <p class="note">
+    <strong>Ground rule:</strong> you built this, you ran it, you can explain every line.
+    That makes <em>"I implemented an AEB pipeline in ROS 2 with lidar–radar fusion"</em> a
+    true statement. Don't stretch it into production or on-vehicle experience — the value
+    is that you understand a real safety function end to end, including its limits.
+  </p>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">01</span><h2>The 30-second version</h2></div>
+    <p>When they say <em>"tell me about a project"</em>:</p>
+    <p class="say">"I built an Automatic Emergency Braking pipeline in ROS 2. A simulator
+      publishes a synthetic lidar and radar; a perception and a radar node each turn their
+      sensor into a measurement with a variance; a fusion node runs a Kalman filter that
+      combines them, gates outliers, and coasts through radar dropouts; and a safety node
+      runs a CLEAR / WARN / BRAKE state machine with two independent braking criteria and a
+      stop-and-hold. The fusion and braking maths are pure, unit-tested modules with no ROS
+      dependency. It stops the ego from 14&nbsp;m/s behind a stopped car, and drives into it
+      when I disable the safety node."</p>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">02</span><h2>Architecture</h2></div>
+    <p>Six nodes, four custom messages, two plain-Python logic modules. The
+      <strong>sense → fuse → decide → act</strong> split is the point — each node does one
+      job and is testable on its own.</p>
+
+    <div class="tbl-scroll">
+      <table>
+        <thead>
+          <tr><th>Node</th><th>Consumes</th><th>Produces</th><th>Job</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="mono">sim_node</td>
+            <td class="mono">/cmd_vel</td>
+            <td class="mono">/scan, /radar, /ego/odom</td>
+            <td>Longitudinal model of ego + lead; synthetic lidar and radar</td>
+          </tr>
+          <tr>
+            <td class="mono">perception_node</td>
+            <td class="mono">/scan</td>
+            <td class="mono">/aeb/meas/lidar</td>
+            <td>Accurate in-path range (no velocity — that's the radar's job)</td>
+          </tr>
+          <tr>
+            <td class="mono">radar_node</td>
+            <td class="mono">/radar</td>
+            <td class="mono">/aeb/meas/radar</td>
+            <td>Validity-gates returns; Doppler closing speed (tight), range (loose)</td>
+          </tr>
+          <tr>
+            <td class="mono">fusion_node</td>
+            <td class="mono">/aeb/meas/lidar, /aeb/meas/radar</td>
+            <td class="mono">/aeb/hazard</td>
+            <td>Kalman filter; outlier gating; coasting through dropouts</td>
+          </tr>
+          <tr>
+            <td class="mono">aeb_node</td>
+            <td class="mono">/aeb/hazard, /ego/odom, /driver/cmd_vel</td>
+            <td class="mono">/cmd_vel, /aeb/status</td>
+            <td>State machine; overrides the driver command with full braking</td>
+          </tr>
+          <tr>
+            <td class="mono">driver_node</td>
+            <td>—</td>
+            <td class="mono">/driver/cmd_vel</td>
+            <td>Stand-in driver holding a cruise speed for AEB to supervise</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p><strong>No node uses ground truth.</strong> Perception and radar see only their
+      own noisy measurements; <code>aeb_node</code> sees only the fused <code>Hazard</code>.
+      Swapping the simulator for real sensor drivers is a launch-file change.</p>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">03</span><h2>Sensor fusion</h2></div>
+    <p>Neither sensor alone is enough: lidar has an accurate range but a poor velocity;
+      radar has an accurate closing speed but a noisy range, and it drops out and throws
+      false alarms. A Kalman filter turns the pair into one clean track.</p>
+
+    <div class="formula">
+      <div class="eq">x = [ range , closing_speed ]&nbsp;&nbsp; d(closing_speed)/dt = a_ego − a_lead</div>
+      <div class="eq">predict: x ← F·x + B·a_ego&nbsp;&nbsp; F = [[1, −dt], [0, 1]]</div>
+      <p class="gloss">The ego's own deceleration (from <code>/ego/odom</code>) is a
+        <strong>known control input</strong> to the predict step — only the lead's
+        acceleration is unknown, and it becomes the process noise <code>σ_a</code>. Drop
+        that <code>B·a_ego</code> term and a constant-velocity model fights the braking AEB
+        just commanded: the prediction diverges, the gate rejects the correct measurements,
+        and the track falls apart. That was a real bug in this project; the fix was one term.</p>
+    </div>
+
+    <div class="tbl-scroll">
+      <table>
+        <thead><tr><th>Sensor</th><th>Measures</th><th>Range var</th><th>Rate var</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">lidar</td><td>range only</td><td class="mono">0.02 m²</td><td class="mono">—</td></tr>
+          <tr><td class="mono">radar</td><td>range + rate</td><td class="mono">0.36 m²</td><td class="mono">0.02 (m/s)²</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>The Kalman gain does the weighting on its own: <strong>range follows the lidar,
+      closing speed follows the radar</strong>, with no hand-coded switch. Two more pieces:</p>
+    <ul>
+      <li><strong>Mahalanobis gate.</strong> Each measurement is scored against the
+        prediction; <code>d² &gt; 9.21</code> (χ², 2-dof, 99&nbsp;%) is rejected — that drops
+        radar false alarms with no separate filter. If a joint range+rate measurement fails,
+        the safety-critical range is retried on its own.</li>
+      <li><strong>Coasting.</strong> No accepted measurement for <code>coast_timeout</code>
+        → predict on the model with inflating covariance. Past <code>drop_timeout</code>
+        → invalidate the track. A blind sensor stack should not brake on a guess.</li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">04</span><h2>The two brake gates</h2></div>
+    <p>Either criterion alone can request a brake — defense in depth. They fail toward
+      braking, not away from it.</p>
+
+    <h3>Time-to-collision gate</h3>
+    <div class="formula">
+      <div class="eq">TTC = range / closing_speed &nbsp;&nbsp;→&nbsp;&nbsp; brake if TTC &lt; 1.2&nbsp;s</div>
+      <p class="gloss">Cheap and intuitive. Weakness: it says nothing about whether you
+        <em>can</em> still stop — at high speed, by the time TTC is low the situation is
+        already lost.</p>
+    </div>
+
+    <h3>Required-deceleration gate</h3>
+    <div class="formula">
+      <div class="eq">a_req = closing_speed² / (2 · (range − standoff))</div>
+      <div class="eq">brake if &nbsp; a_req &gt; 0.7 · a_max &nbsp;&nbsp;(a_max = 8&nbsp;m/s²)</div>
+      <p class="gloss">From v² = 2·a·d. Trips when comfortable braking is no longer enough
+        to stop <code>standoff</code> metres short. Catches the high-speed cases the TTC
+        gate reacts to too late. <code>standoff</code> ≈ 2&nbsp;m keeps the stopping point
+        clear of the obstacle.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">05</span><h2>The state machine</h2></div>
+    <div class="fsm" role="img" aria-label="State machine: CLEAR transitions to WARN, WARN to BRAKE, BRAKE holds until stopped and the obstacle clears, then returns to CLEAR.">
+      <svg viewBox="0 0 640 150" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="var(--muted)"/>
+          </marker>
+        </defs>
+        <g fill="none" stroke="var(--muted)" stroke-width="1.6">
+          <line x1="150" y1="62" x2="243" y2="62" marker-end="url(#ah)"/>
+          <line x1="397" y1="62" x2="490" y2="62" marker-end="url(#ah)"/>
+          <path d="M565 92 C565 138, 150 138, 118 92" marker-end="url(#ah)"/>
+        </g>
+        <g>
+          <rect x="40" y="40" width="110" height="44" rx="8" fill="var(--surface-2)" stroke="var(--clear)" stroke-width="2"/>
+          <text x="95" y="67" text-anchor="middle" font-size="15" fill="var(--clear)">CLEAR</text>
+          <rect x="287" y="40" width="110" height="44" rx="8" fill="var(--surface-2)" stroke="var(--warn)" stroke-width="2"/>
+          <text x="342" y="67" text-anchor="middle" font-size="15" fill="var(--warn)">WARN</text>
+          <rect x="531" y="40" width="110" height="44" rx="8" fill="var(--surface-2)" stroke="var(--brake)" stroke-width="2"/>
+          <text x="586" y="67" text-anchor="middle" font-size="15" fill="var(--brake)">BRAKE</text>
+        </g>
+        <g font-size="10.5" fill="var(--muted)" text-anchor="middle">
+          <text x="196" y="52">TTC or a_req</text>
+          <text x="443" y="52">TTC or a_req</text>
+          <text x="342" y="132">stopped &amp; obstacle cleared</text>
+        </g>
+      </svg>
+    </div>
+    <ul>
+      <li><strong>WARN</strong> is advisory only — no actuation. It exists to drive a
+        forward-collision-warning HMI.</li>
+      <li><strong>BRAKE</strong> commands full braking, then latches until the vehicle is
+        stopped, then <em>holds</em> the brake while an obstacle stays within
+        <code>hold_distance</code>. Real "AEB stop and hold" behaves this way; it also
+        stops the ego creeping forward again once the driver's foot is still on the gas.</li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">06</span><h2>Why hysteresis</h2></div>
+    <p>The <code>a_req</code> estimate is noisy — closing speed is a filtered finite
+      difference with a ~0.5&nbsp;m/s noise floor. Sitting exactly on a threshold, the raw
+      logic flips state many times a second.</p>
+    <p>Fix: <strong>entering</strong> a more-severe state uses the nominal threshold;
+      <strong>leaving</strong> it requires the signal to recover past a 1.25× margin. One
+      known residual: a single brief <code>CLEAR→WARN→CLEAR</code> flap can still happen on
+      first entry, because hysteresis only damps the exit. WARN drives nothing, so it's
+      cosmetic — and being able to name it is a better answer than pretending it's perfect.</p>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">07</span><h2>ROS 2 concepts it exercises</h2></div>
+    <p>Everything here is something you can be asked to point at in the code:</p>
+    <div class="chips">
+      <span class="chip">publishers / subscribers</span>
+      <span class="chip">timers</span>
+      <span class="chip">multi-topic callback</span>
+      <span class="chip">parameters + YAML</span>
+      <span class="chip">launch files</span>
+      <span class="chip">launch args &amp; conditions</span>
+      <span class="chip">4× custom .msg</span>
+      <span class="chip">ament_python</span>
+      <span class="chip">ament_cmake (interfaces)</span>
+      <span class="chip">tf2 broadcast</span>
+      <span class="chip">QoS defaults</span>
+      <span class="chip">colcon build / test</span>
+      <span class="chip">RViz + MarkerArray</span>
+    </div>
+    <p>One war story worth telling: the pipeline first ran silently doing nothing. Root
+      cause was a non-finite value (<code>inf</code>) written into a <code>float32</code>
+      message field, which killed the perception callback. Fix was a finite sentinel plus
+      a guarded callback that logs instead of dying quietly. Good example of debugging a
+      distributed graph where "no error" doesn't mean "working".</p>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">08</span><h2>Known limitations</h2></div>
+    <p>Say these before you're asked — knowing the edges of your own system is the signal.</p>
+    <ul>
+      <li>Purely longitudinal: no steering, no lateral path, one obstacle — so the "fusion"
+        is a single track with fixed association, not JPDA / MHT.</li>
+      <li>Sensors are synthetic. Lidar noise is Gaussian with no clutter or occlusion;
+        radar has dropouts and false alarms but no multipath, angle, or RCS model.</li>
+      <li>No track confirmation — a radar false alarm as the <em>first</em> return can delay
+        track acquisition by up to <code>drop_timeout</code> (~1.5&nbsp;s).</li>
+      <li>First-order vehicle model: no actuator lag, no brake-pressure ramp, no tyre model.</li>
+      <li>Fixed thresholds. Production AEB schedules them on speed, estimated road friction,
+        and driver-attention state.</li>
+      <li>Not ISO&nbsp;26262 anything: no redundancy, no fault handling, no plausibility
+        checks on the sensor stream itself.</li>
+    </ul>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">09</span><h2>Questions to expect</h2></div>
+
+    <div class="qa">
+      <p class="q">Why two braking criteria instead of one?</p>
+      <p class="a">They cover different failure modes. TTC is blind to whether stopping is
+        still physically possible; the deceleration gate is blind to slow-closing cases
+        that are still imminent because they're very near. Requiring either to trip is a
+        cheap safety margin.</p>
+
+      <p class="q">Why fuse the sensors instead of picking the better one?</p>
+      <p class="a">They're better at different things — lidar range, radar velocity — and
+        each has failure modes the other covers. The Kalman filter weights each measurement
+        by its variance, so I get the best of both plus a track that survives radar dropouts
+        by coasting on the motion model.</p>
+
+      <p class="q">How does the filter reject a radar false alarm?</p>
+      <p class="a">A Mahalanobis distance check: score the measurement against the predicted
+        state and its covariance, reject if it exceeds a chi-square threshold. A spurious
+        return 30&nbsp;m off the track is hundreds of sigma out, so it never gets applied.</p>
+
+      <p class="q">A constant-velocity filter can't track hard braking. How do you handle it?</p>
+      <p class="a">The ego's own acceleration is a known control input — I feed it into the
+        predict step from the odometry, so the filter doesn't fight the braking AEB
+        commanded. Only the <em>lead's</em> acceleration is left as process noise. The lead
+        can still surprise it; for that I'd move to a constant-acceleration or IMM model.</p>
+
+      <p class="q">Your controller chatters near the threshold. What do you do?</p>
+      <p class="a">Hysteresis — asymmetric enter/exit thresholds — plus latching the brake
+        state until the vehicle has stopped. If it still chattered I'd add a debounce
+        counter or filter the decision input harder, trading reaction time for stability.</p>
+
+      <p class="q">How did you test it?</p>
+      <p class="a">Both logic modules are pure functions with no ROS imports.
+        <code>safety.py</code> has a unit test per transition; <code>fusion.py</code> has
+        tests for filter convergence, range-only vs rate-only updates, outlier gating, and
+        complementary weighting. Integration check: run the scenarios, assert no collision
+        with AEB on and collision with it off.</p>
+
+      <p class="q">What would you add next?</p>
+      <p class="a">A camera measurement as a third input (class + rough range); an Adaptive
+        Cruise Control mode that follows at a time-gap and hands off to AEB; replaying a
+        recorded <code>ros2 bag</code> in a regression test.</p>
+
+      <p class="q">Why ROS 2 and not just a script?</p>
+      <p class="a">The node boundaries force clean interfaces — perception can't reach into
+        the controller's state. I get introspection for free (<code>ros2 topic echo</code>,
+        <code>rqt_graph</code>, bags), and swapping the simulator for real sensor drivers
+        is a launch-file change, not a rewrite.</p>
+    </div>
+  </section>
+
+  <footer>
+    aeb_ros2_demo · ROS 2 Humble · sim → lidar + radar → KF fusion → AEB
+  </footer>
+
+</div>

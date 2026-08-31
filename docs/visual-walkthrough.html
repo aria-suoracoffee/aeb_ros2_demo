@@ -1,0 +1,546 @@
+<meta charset="utf-8">
+<title>AEB System — Visual Walkthrough</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+
+<style>
+  :root {
+    --bg: #f2f4f2;
+    --surface: #ffffff;
+    --surface-2: #eaedec;
+    --ink: #141a1d;
+    --muted: #58616a;
+    --line: #d3d8d6;
+    --accent: #2f6690;
+    --accent-ink: #234e6e;
+    --fuse: #6a54a3;
+    --fuse-ink: #574494;
+    --clear: #2e8f66;
+    --warn: #b9781f;
+    --brake: #bf3a2d;
+    --shadow: 0 1px 2px rgba(20,26,29,.05), 0 10px 30px -16px rgba(20,26,29,.16);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d1013; --surface: #14181c; --surface-2: #1c2126;
+      --ink: #e6e9ec; --muted: #98a1aa; --line: #2b323a;
+      --accent: #6ba7d4; --accent-ink: #9cc6e6;
+      --fuse: #a08fd4; --fuse-ink: #b9abe4;
+      --clear: #4cbe8b; --warn: #e0a24c; --brake: #e4594a;
+      --shadow: 0 1px 2px rgba(0,0,0,.45), 0 14px 36px -16px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d1013; --surface: #14181c; --surface-2: #1c2126;
+    --ink: #e6e9ec; --muted: #98a1aa; --line: #2b323a;
+    --accent: #6ba7d4; --accent-ink: #9cc6e6;
+    --fuse: #a08fd4; --fuse-ink: #b9abe4;
+    --clear: #4cbe8b; --warn: #e0a24c; --brake: #e4594a;
+    --shadow: 0 1px 2px rgba(0,0,0,.45), 0 14px 36px -16px rgba(0,0,0,.6);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "IBM Plex Sans", system-ui, sans-serif;
+    font-size: 17px; line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 52rem; margin: 0 auto; padding: 0 1.4rem 5rem; }
+
+  header { border-bottom: 1px solid var(--line);
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 8%, var(--bg)), var(--bg)); }
+  header .wrap { padding: 3rem 1.4rem 2.2rem; }
+  .kicker { font-family: "IBM Plex Mono", monospace; font-size: .72rem;
+    letter-spacing: .16em; text-transform: uppercase; color: var(--accent-ink); margin: 0 0 .9rem; }
+  h1 { font-family: "Fraunces", Georgia, serif; font-weight: 600;
+    font-size: clamp(2rem, 5.5vw, 2.9rem); line-height: 1.1; letter-spacing: -.01em;
+    margin: 0 0 .8rem; text-wrap: balance; }
+  .standfirst { color: var(--muted); max-width: 36rem; margin: 0; font-size: 1.03rem; }
+
+  figure { margin: 0; }
+  section { margin-top: 3.2rem; }
+  .n { font-family: "IBM Plex Mono", monospace; font-size: .8rem; color: var(--accent-ink);
+    letter-spacing: .05em; }
+  h2 { font-size: 1.3rem; font-weight: 700; margin: .3rem 0 0; letter-spacing: -.005em;
+    text-wrap: balance; }
+  .lead { color: var(--muted); margin: .5rem 0 1.1rem; }
+
+  .figcard {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+    padding: 1.4rem 1.4rem 1.1rem; box-shadow: var(--shadow);
+  }
+  .figcard svg { width: 100%; height: auto; display: block; }
+  .scroll { overflow-x: auto; }
+  .scroll svg { min-width: 34rem; }
+  figcaption { font-size: .9rem; color: var(--muted); margin-top: .9rem;
+    padding-top: .8rem; border-top: 1px solid var(--line); }
+
+  .say {
+    margin: 1rem 0 0; padding: .9rem 1.1rem; border-left: 3px solid var(--clear);
+    background: color-mix(in srgb, var(--clear) 7%, var(--surface));
+    border-radius: 0 5px 5px 0; font-size: .95rem;
+  }
+  .say b { font-weight: 600; color: var(--ink); }
+
+  code { font-family: "IBM Plex Mono", monospace; font-size: .86em;
+    background: var(--surface-2); padding: .07em .35em; border-radius: 3px; }
+
+  .svg-mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+  .svg-sans { font-family: "IBM Plex Sans", system-ui, sans-serif; }
+
+  footer { margin-top: 4rem; padding-top: 1.3rem; border-top: 1px solid var(--line);
+    font-size: .82rem; color: var(--muted); font-family: "IBM Plex Mono", monospace; }
+
+  @media (max-width: 30rem) { body { font-size: 16px; } .figcard { padding: 1rem .8rem .9rem; } }
+</style>
+
+<header>
+  <div class="wrap">
+    <p class="kicker">ROS 2 · ADAS · Automatic Emergency Braking</p>
+    <h1>How the AEB system works — one diagram at a time</h1>
+    <p class="standfirst">Six pictures that together explain the whole pipeline: what each node
+      does, why two sensors are fused, how the Kalman filter runs, and how the braking
+      decision is made. Each has a line you can say out loud.</p>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ============================================ 1 -->
+  <section>
+    <p class="n">01</p>
+    <h2>The pipeline</h2>
+    <p class="lead">Data flows one way: sensors → fusion → decision → actuation, then the
+      command loops back to the vehicle.</p>
+
+    <div class="figcard">
+      <figure>
+        <div class="scroll">
+        <svg viewBox="0 0 920 460" role="img" class="svg-sans"
+             aria-label="sim_node produces /scan, /radar and /ego/odom. perception_node turns /scan into /aeb/meas/lidar; radar_node turns /radar into /aeb/meas/radar. fusion_node combines both measurements plus /ego/odom into /aeb/hazard. aeb_node takes /aeb/hazard and /driver/cmd_vel and outputs /cmd_vel back to sim_node.">
+          <defs>
+            <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+
+          <g class="svg-mono" font-size="12" fill="var(--muted)" letter-spacing="1.5">
+            <text x="230" y="24" text-anchor="middle">SENSE</text>
+            <text x="600" y="24" text-anchor="middle">FUSE</text>
+            <text x="815" y="24" text-anchor="middle">DECIDE / ACT</text>
+          </g>
+          <g stroke="var(--line)" stroke-width="1">
+            <line x1="500" y1="36" x2="500" y2="400"/>
+            <line x1="712" y1="36" x2="712" y2="400"/>
+          </g>
+
+          <!-- plant -->
+          <rect x="40" y="182" width="120" height="112" rx="9"
+                fill="color-mix(in srgb, var(--muted) 12%, var(--surface))"
+                stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="5 4"/>
+          <text x="100" y="232" text-anchor="middle" font-size="13.5" font-weight="600" fill="var(--ink)">sim_node</text>
+          <text x="100" y="251" text-anchor="middle" font-size="10.5" fill="var(--muted)">plant: ego +</text>
+          <text x="100" y="266" text-anchor="middle" font-size="10.5" fill="var(--muted)">lead + sensors</text>
+
+          <!-- sensor nodes -->
+          <rect x="300" y="90" width="150" height="50" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8"/>
+          <text x="375" y="120" text-anchor="middle" font-size="12.5" font-weight="600" fill="var(--accent-ink)">perception_node</text>
+          <rect x="300" y="175" width="150" height="50" rx="8" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8"/>
+          <text x="375" y="205" text-anchor="middle" font-size="12.5" font-weight="600" fill="var(--accent-ink)">radar_node</text>
+
+          <!-- fusion -->
+          <rect x="530" y="120" width="150" height="66" rx="8" fill="color-mix(in srgb, var(--fuse) 12%, var(--surface))" stroke="var(--fuse)" stroke-width="2"/>
+          <text x="605" y="149" text-anchor="middle" font-size="13" font-weight="700" fill="var(--fuse-ink)">fusion_node</text>
+          <text x="605" y="167" text-anchor="middle" font-size="10" fill="var(--muted)">Kalman filter</text>
+
+          <!-- aeb -->
+          <rect x="740" y="120" width="150" height="66" rx="8" fill="color-mix(in srgb, var(--brake) 10%, var(--surface))" stroke="var(--brake)" stroke-width="2"/>
+          <text x="815" y="149" text-anchor="middle" font-size="13" font-weight="700" fill="var(--brake)">aeb_node</text>
+          <text x="815" y="167" text-anchor="middle" font-size="9.5" fill="var(--muted)">CLEAR / WARN / BRAKE</text>
+
+          <!-- driver -->
+          <rect x="740" y="290" width="150" height="44" rx="8" fill="var(--surface)" stroke="var(--muted)" stroke-width="1.5"/>
+          <text x="815" y="317" text-anchor="middle" font-size="12" font-weight="600" fill="var(--ink)">driver_node</text>
+
+          <g fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M160 150 H240 V115 H300" marker-end="url(#a1)"/>
+            <path d="M160 210 H240 V200 H300" marker-end="url(#a1)"/>
+            <path d="M160 272 H262 V153 H530" marker-end="url(#a1)"/>
+            <path d="M450 115 H492 V137 H530" marker-end="url(#a1)"/>
+            <path d="M450 200 H492 V169 H530" marker-end="url(#a1)"/>
+            <path d="M680 153 H740" marker-end="url(#a1)"/>
+            <path d="M815 290 V186" marker-end="url(#a1)"/>
+            <path d="M765 186 V424 H68 V294" marker-end="url(#a1)"/>
+          </g>
+
+          <g class="svg-mono" font-size="10.5" fill="var(--muted)">
+            <text x="247" y="108">/scan</text>
+            <text x="247" y="235">/radar</text>
+            <text x="172" y="264">/ego/odom</text>
+            <text x="455" y="108">/aeb/meas/lidar</text>
+            <text x="455" y="238">/aeb/meas/radar</text>
+            <text x="685" y="145">/aeb/hazard</text>
+            <text x="742" y="255" text-anchor="end">/driver/cmd_vel</text>
+            <text x="410" y="418">/cmd_vel   (brake command, or driver cruise passed through)</text>
+          </g>
+          <text x="268" y="300" class="svg-mono" font-size="9.5" fill="var(--fuse-ink)">control input aₑ →</text>
+        </svg>
+        </div>
+        <figcaption><b>The loop.</b> <code>sim_node</code> is the stand-in for the real vehicle
+          and its sensors. Everything else is the stack you'd keep if you swapped the sim for
+          real drivers. <code>/ego/odom</code> feeds <code>fusion_node</code> (as a control
+          input — diagram 3) and <code>aeb_node</code> (to know when the car has stopped).</figcaption>
+      </figure>
+      <p class="say"><b>Say:</b> "Four processing nodes with single responsibilities —
+        two turn a sensor into a measurement, one fuses, one decides. No node sees ground
+        truth; each only gets the topic above it."</p>
+    </div>
+  </section>
+
+  <!-- ============================================ 2 -->
+  <section>
+    <p class="n">02</p>
+    <h2>Why fuse two sensors</h2>
+    <p class="lead">Each sensor is good at one thing and bad at the other. Together they
+      cover both — that's the whole reason the fusion node exists.</p>
+
+    <div class="figcard">
+      <figure>
+        <div class="scroll">
+        <svg viewBox="0 0 900 340" role="img" class="svg-sans"
+             aria-label="Lidar measures range tightly but has no velocity. Radar measures velocity tightly via Doppler but range loosely, and it drops frames and produces false alarms. Fused, the track takes range from lidar and closing speed from radar.">
+          <defs>
+            <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+          <!-- LIDAR -->
+          <text x="215" y="30" text-anchor="middle" class="svg-mono" font-size="13" fill="var(--accent-ink)" letter-spacing="1">LIDAR</text>
+          <line x1="60" y1="70" x2="330" y2="70" stroke="var(--line)" stroke-width="1"/>
+
+          <text x="70" y="104" font-size="13" fill="var(--ink)">range</text>
+          <line x1="160" y1="100" x2="320" y2="100" stroke="currentColor" stroke-width="1.4"/>
+          <line x1="236" y1="100" x2="244" y2="100" stroke="var(--clear)" stroke-width="7"/>
+          <text x="160" y="121" font-size="11" fill="var(--clear)">± 0.14 m  — tight</text>
+
+          <text x="70" y="164" font-size="13" fill="var(--ink)">closing speed</text>
+          <g stroke="var(--brake)" stroke-width="2.4"><line x1="192" y1="150" x2="212" y2="170"/><line x1="212" y1="150" x2="192" y2="170"/></g>
+          <text x="224" y="164" font-size="11" fill="var(--muted)">none — no Doppler</text>
+
+          <!-- RADAR -->
+          <text x="640" y="30" text-anchor="middle" class="svg-mono" font-size="13" fill="var(--accent-ink)" letter-spacing="1">RADAR</text>
+          <line x1="470" y1="70" x2="820" y2="70" stroke="var(--line)" stroke-width="1"/>
+
+          <text x="480" y="104" font-size="13" fill="var(--ink)">range</text>
+          <line x1="580" y1="100" x2="810" y2="100" stroke="currentColor" stroke-width="1.4"/>
+          <line x1="660" y1="100" x2="740" y2="100" stroke="var(--warn)" stroke-width="7"/>
+          <text x="580" y="121" font-size="11" fill="var(--warn)">± 0.6 m  — loose</text>
+
+          <text x="480" y="164" font-size="13" fill="var(--ink)">closing speed</text>
+          <line x1="600" y1="160" x2="780" y2="160" stroke="currentColor" stroke-width="1.4" marker-end="url(#a2)"/>
+          <line x1="686" y1="160" x2="694" y2="160" stroke="var(--clear)" stroke-width="7"/>
+          <text x="600" y="181" font-size="11" fill="var(--clear)">± 0.14 m/s  — tight (Doppler)</text>
+
+          <text x="480" y="221" font-size="12" fill="var(--muted)">✕  drops ~1 frame in 8</text>
+          <text x="480" y="241" font-size="12" fill="var(--muted)">✕  occasional false blip</text>
+
+          <!-- FUSED -->
+          <line x1="60" y1="272" x2="820" y2="272" stroke="var(--line)" stroke-width="1"/>
+          <text x="60" y="300" font-size="13" font-weight="700" fill="var(--fuse-ink)">FUSED</text>
+          <rect x="150" y="288" width="230" height="20" rx="4" fill="color-mix(in srgb, var(--clear) 22%, var(--surface))" stroke="var(--clear)" stroke-width="1.5"/>
+          <text x="265" y="302" text-anchor="middle" font-size="11" fill="var(--ink)">range ← lidar</text>
+          <rect x="400" y="288" width="230" height="20" rx="4" fill="color-mix(in srgb, var(--clear) 22%, var(--surface))" stroke="var(--clear)" stroke-width="1.5"/>
+          <text x="515" y="302" text-anchor="middle" font-size="11" fill="var(--ink)">closing speed ← radar</text>
+          <text x="648" y="302" font-size="11" fill="var(--muted)">both tight, from one filter</text>
+        </svg>
+        </div>
+        <figcaption><b>Complementary.</b> The Kalman filter weights each measurement by the
+          variance the sensor reports, so it automatically takes range from the lidar and
+          closing speed from the radar — no hand-written "if radar then…" switch.</figcaption>
+      </figure>
+      <p class="say"><b>Say:</b> "Lidar knows where, radar knows how fast. Neither alone
+        is enough to decide a brake, so I fuse them — and the fusion also has to survive the
+        radar dropping out and lying."</p>
+    </div>
+  </section>
+
+  <!-- ============================================ 3 -->
+  <section>
+    <p class="n">03</p>
+    <h2>The Kalman filter loop</h2>
+    <p class="lead">Runs every cycle. Predict the state forward, check each measurement is
+      plausible, blend in the ones that pass.</p>
+
+    <div class="figcard">
+      <figure>
+        <div class="scroll">
+        <svg viewBox="0 0 900 400" role="img" class="svg-sans"
+             aria-label="The filter predicts the state forward using the ego acceleration as a control input, gates each incoming measurement with a Mahalanobis test rejecting outliers, updates the state with measurements that pass, and outputs range and closing speed as the hazard.">
+          <defs>
+            <marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+
+          <!-- PREDICT -->
+          <rect x="60" y="120" width="200" height="110" rx="9" fill="color-mix(in srgb, var(--fuse) 12%, var(--surface))" stroke="var(--fuse)" stroke-width="2"/>
+          <text x="160" y="150" text-anchor="middle" font-size="14" font-weight="700" fill="var(--fuse-ink)">PREDICT</text>
+          <text x="160" y="174" text-anchor="middle" font-size="11" fill="var(--ink)">move state forward dt</text>
+          <text x="160" y="192" text-anchor="middle" class="svg-mono" font-size="10.5" fill="var(--muted)">x ← F·x + B·aₑ</text>
+          <text x="160" y="210" text-anchor="middle" font-size="11" fill="var(--ink)">grow covariance</text>
+
+          <!-- control input -->
+          <rect x="60" y="290" width="200" height="42" rx="8" fill="var(--surface)" stroke="var(--muted)" stroke-width="1.4"/>
+          <text x="160" y="316" text-anchor="middle" font-size="11.5" fill="var(--ink)">ego accel aₑ  ·  from /ego/odom</text>
+          <path d="M160 290 V232" fill="none" stroke="var(--fuse)" stroke-width="1.6" marker-end="url(#a3)"/>
+          <text x="170" y="264" class="svg-mono" font-size="10" fill="var(--fuse-ink)">control input</text>
+
+          <!-- GATE -->
+          <rect x="350" y="120" width="200" height="110" rx="9" fill="var(--surface)" stroke="var(--warn)" stroke-width="2"/>
+          <text x="450" y="150" text-anchor="middle" font-size="14" font-weight="700" fill="var(--warn)">GATE</text>
+          <text x="450" y="174" text-anchor="middle" font-size="11" fill="var(--ink)">Mahalanobis distance</text>
+          <text x="450" y="192" text-anchor="middle" class="svg-mono" font-size="10.5" fill="var(--muted)">d² &gt; 9.21 → reject</text>
+          <text x="450" y="210" text-anchor="middle" font-size="11" fill="var(--ink)">drops radar false blips</text>
+
+          <!-- measurement in -->
+          <text x="450" y="46" text-anchor="middle" class="svg-mono" font-size="10.5" fill="var(--accent-ink)">/aeb/meas/lidar · /aeb/meas/radar</text>
+          <path d="M450 56 V120" fill="none" stroke="currentColor" stroke-width="1.6" marker-end="url(#a3)"/>
+          <!-- rejected -->
+          <path d="M550 150 H640" fill="none" stroke="var(--brake)" stroke-width="1.6" stroke-dasharray="5 3" marker-end="url(#a3)"/>
+          <text x="596" y="142" text-anchor="middle" font-size="10" fill="var(--brake)">outlier</text>
+          <text x="596" y="167" text-anchor="middle" font-size="16" fill="var(--brake)">✕</text>
+
+          <!-- UPDATE -->
+          <rect x="350" y="270" width="200" height="96" rx="9" fill="color-mix(in srgb, var(--clear) 10%, var(--surface))" stroke="var(--clear)" stroke-width="2"/>
+          <text x="450" y="298" text-anchor="middle" font-size="14" font-weight="700" fill="var(--clear)">UPDATE</text>
+          <text x="450" y="321" text-anchor="middle" font-size="11" fill="var(--ink)">blend measurement by variance</text>
+          <text x="450" y="339" text-anchor="middle" font-size="11" fill="var(--ink)">shrink covariance</text>
+
+          <!-- OUTPUT -->
+          <rect x="650" y="270" width="190" height="96" rx="9" fill="var(--surface)" stroke="var(--accent)" stroke-width="1.8"/>
+          <text x="745" y="298" text-anchor="middle" font-size="13" font-weight="700" fill="var(--accent-ink)">/aeb/hazard</text>
+          <text x="745" y="321" text-anchor="middle" class="svg-mono" font-size="10.5" fill="var(--ink)">[ range,</text>
+          <text x="745" y="338" text-anchor="middle" class="svg-mono" font-size="10.5" fill="var(--ink)">closing_speed ]</text>
+
+          <!-- flow arrows -->
+          <g fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M450 230 V270" marker-end="url(#a3)"/>
+            <path d="M550 318 H650" marker-end="url(#a3)"/>
+            <path d="M350 318 H300 V175 H260" marker-end="url(#a3)"/>
+          </g>
+          <text x="305" y="250" class="svg-mono" font-size="10" fill="var(--muted)">next cycle</text>
+          <text x="470" y="252" font-size="10" fill="var(--muted)">passed the gate</text>
+
+          <!-- coast note -->
+          <text x="60" y="384" font-size="11" fill="var(--muted)">No measurement passes for 0.6 s → keep predicting (covariance grows).  For 1.5 s → declare "no track".</text>
+        </svg>
+        </div>
+        <figcaption><b>Predict–gate–update.</b> The state is <code>[range, closing_speed]</code>.
+          Feeding the ego's own deceleration into PREDICT is what stops the filter fighting a
+          hard brake — without it, predictions diverge from reality and the gate rejects the
+          correct measurements.</figcaption>
+      </figure>
+      <p class="say"><b>Say:</b> "Constant-closing-speed model, but I feed in the ego's own
+        acceleration as a known input so the filter tracks through braking. The gate throws
+        out radar false alarms; if everything stops passing, it stops trusting the track."</p>
+    </div>
+  </section>
+
+  <!-- ============================================ 4 -->
+  <section>
+    <p class="n">04</p>
+    <h2>The braking state machine</h2>
+    <p class="lead">Three states. WARN only annunciates; BRAKE commands full braking and
+      holds it.</p>
+
+    <div class="figcard">
+      <figure>
+        <div class="scroll">
+        <svg viewBox="0 0 900 300" role="img" class="svg-sans"
+             aria-label="CLEAR moves to WARN when TTC below 2 seconds or required deceleration above 3.2. WARN moves to BRAKE when TTC below 1.2 seconds or required deceleration above 5.6. BRAKE holds while moving or an obstacle is within 15 metres, then returns to CLEAR once stopped and clear. WARN returns to CLEAR only after the signal recovers past 1.25 times the threshold.">
+          <defs>
+            <marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+
+          <rect x="50" y="110" width="150" height="64" rx="10" fill="color-mix(in srgb, var(--clear) 12%, var(--surface))" stroke="var(--clear)" stroke-width="2.5"/>
+          <text x="125" y="140" text-anchor="middle" font-size="15" font-weight="700" fill="var(--clear)">CLEAR</text>
+          <text x="125" y="159" text-anchor="middle" font-size="10.5" fill="var(--muted)">pass driver cmd</text>
+
+          <rect x="375" y="110" width="150" height="64" rx="10" fill="color-mix(in srgb, var(--warn) 14%, var(--surface))" stroke="var(--warn)" stroke-width="2.5"/>
+          <text x="450" y="140" text-anchor="middle" font-size="15" font-weight="700" fill="var(--warn)">WARN</text>
+          <text x="450" y="159" text-anchor="middle" font-size="10.5" fill="var(--muted)">annunciate only</text>
+
+          <rect x="700" y="110" width="150" height="64" rx="10" fill="color-mix(in srgb, var(--brake) 12%, var(--surface))" stroke="var(--brake)" stroke-width="2.5"/>
+          <text x="775" y="140" text-anchor="middle" font-size="15" font-weight="700" fill="var(--brake)">BRAKE</text>
+          <text x="775" y="159" text-anchor="middle" font-size="10.5" fill="var(--muted)">cmd = 0</text>
+
+          <g fill="none" stroke="currentColor" stroke-width="1.7">
+            <path d="M200 135 H375" marker-end="url(#a4)"/>
+            <path d="M525 135 H700" marker-end="url(#a4)"/>
+            <path d="M450 174 C450 250, 125 250, 125 178" marker-end="url(#a4)"/>
+            <path d="M775 110 C775 46, 125 46, 125 106" marker-end="url(#a4)"/>
+          </g>
+          <!-- self loop on BRAKE -->
+          <path d="M840 108 C885 80, 885 40, 830 40 C800 40, 792 74, 812 96" fill="none" stroke="currentColor" stroke-width="1.7" marker-end="url(#a4)"/>
+
+          <g font-size="11">
+            <text x="287" y="122" text-anchor="middle" fill="var(--ink)">TTC &lt; 2.0 s</text>
+            <text x="287" y="138" text-anchor="middle" fill="var(--muted)">or a_req &gt; 3.2</text>
+            <text x="612" y="122" text-anchor="middle" fill="var(--ink)">TTC &lt; 1.2 s</text>
+            <text x="612" y="138" text-anchor="middle" fill="var(--muted)">or a_req &gt; 5.6</text>
+            <text x="287" y="268" text-anchor="middle" fill="var(--muted)">signal recovers past 1.25× (hysteresis)</text>
+            <text x="450" y="38" text-anchor="middle" fill="var(--ink)">stopped &amp; obstacle cleared</text>
+            <text x="878" y="60" fill="var(--muted)">hold:</text>
+            <text x="820" y="26" text-anchor="middle" fill="var(--muted)">v_ego &gt; 0  or  obstacle &lt; 15 m</text>
+          </g>
+        </svg>
+        </div>
+        <figcaption><b>Latch and hold.</b> Once in BRAKE it stays until the car is stopped,
+          then keeps <code>cmd = 0</code> while the obstacle is still close — production "AEB
+          stop and hold". The hysteresis on the WARN→CLEAR edge stops the state flickering on
+          a noisy signal sitting on the threshold.</figcaption>
+      </figure>
+      <p class="say"><b>Say:</b> "Two thresholds to escalate, a relaxed one to de-escalate so
+        it doesn't chatter, and BRAKE latches to a full stop and holds — it won't release
+        mid-event."</p>
+    </div>
+  </section>
+
+  <!-- ============================================ 5 -->
+  <section>
+    <p class="n">05</p>
+    <h2>The two brake gates</h2>
+    <p class="lead">Both are computed from the same fused <code>range</code> and
+      <code>closing_speed</code>. Either one crossing its threshold triggers the brake.</p>
+
+    <div class="figcard">
+      <figure>
+        <div class="scroll">
+        <svg viewBox="0 0 900 320" role="img" class="svg-sans"
+             aria-label="An ego vehicle approaches a lead vehicle. Range is the gap between them; standoff is a 2 metre margin kept clear at the lead. Time-to-collision is range divided by closing speed and fires below 1.2 seconds. Required deceleration is closing speed squared over twice the range minus standoff and fires above 5.6 metres per second squared.">
+          <defs>
+            <marker id="a5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+
+          <!-- road -->
+          <line x1="40" y1="150" x2="860" y2="150" stroke="var(--line)" stroke-width="2"/>
+          <g stroke="var(--muted)" stroke-width="2" stroke-dasharray="12 12" opacity=".5">
+            <line x1="40" y1="130" x2="860" y2="130"/>
+          </g>
+
+          <!-- ego -->
+          <rect x="90" y="106" width="90" height="34" rx="6" fill="color-mix(in srgb, var(--accent) 20%, var(--surface))" stroke="var(--accent)" stroke-width="2"/>
+          <text x="135" y="128" text-anchor="middle" font-size="11" font-weight="600" fill="var(--accent-ink)">ego</text>
+          <!-- closing speed arrow -->
+          <line x1="185" y1="123" x2="255" y2="123" stroke="var(--brake)" stroke-width="2.5" marker-end="url(#a5)"/>
+          <text x="205" y="113" font-size="11" fill="var(--brake)">closing_speed</text>
+
+          <!-- lead -->
+          <rect x="640" y="106" width="90" height="34" rx="6" fill="color-mix(in srgb, var(--muted) 18%, var(--surface))" stroke="var(--muted)" stroke-width="2"/>
+          <text x="685" y="128" text-anchor="middle" font-size="11" font-weight="600" fill="var(--ink)">lead</text>
+
+          <!-- range bracket -->
+          <line x1="180" y1="180" x2="640" y2="180" stroke="currentColor" stroke-width="1.5" marker-start="url(#a5)" marker-end="url(#a5)"/>
+          <text x="410" y="199" text-anchor="middle" font-size="12" fill="var(--ink)">range</text>
+
+          <!-- standoff -->
+          <rect x="580" y="142" width="60" height="16" fill="color-mix(in srgb, var(--warn) 30%, transparent)"/>
+          <line x1="580" y1="215" x2="640" y2="215" stroke="var(--warn)" stroke-width="1.5" marker-start="url(#a5)" marker-end="url(#a5)"/>
+          <text x="610" y="234" text-anchor="middle" font-size="11" fill="var(--warn)">standoff 2 m</text>
+
+          <!-- gate 1 -->
+          <rect x="90" y="252" width="360" height="56" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.4"/>
+          <text x="106" y="274" font-size="12" font-weight="600" fill="var(--ink)">time-to-collision</text>
+          <text x="106" y="294" class="svg-mono" font-size="11" fill="var(--muted)">TTC = range / closing_speed   →  fire &lt; 1.2 s</text>
+
+          <!-- gate 2 -->
+          <rect x="475" y="252" width="385" height="56" rx="8" fill="var(--surface)" stroke="var(--line)" stroke-width="1.4"/>
+          <text x="491" y="274" font-size="12" font-weight="600" fill="var(--ink)">required deceleration</text>
+          <text x="491" y="294" class="svg-mono" font-size="11" fill="var(--muted)">a_req = v² / (2·(range−standoff))  →  fire &gt; 5.6</text>
+        </svg>
+        </div>
+        <figcaption><b>Two views of the same danger.</b> TTC asks "how long until impact?".
+          Required deceleration asks "can I still stop in the space left?" — it catches
+          high-speed cases where TTC reacts too late. <code>5.6 = 0.7 × 8 m/s²</code>, i.e.
+          70% of the car's braking capability.</figcaption>
+      </figure>
+      <p class="say"><b>Say:</b> "Defense in depth — TTC is intuitive but blind to whether
+        stopping is still possible; the deceleration gate covers that. Either one fires the
+        brake."</p>
+    </div>
+  </section>
+
+  <!-- ============================================ 6 -->
+  <section>
+    <p class="n">06</p>
+    <h2>One run, start to stop</h2>
+    <p class="lead"><code>stationary_lead</code>: ego at 14 m/s, stopped car 60 m ahead.
+      Numbers are from an actual run.</p>
+
+    <div class="figcard">
+      <figure>
+        <div class="scroll">
+        <svg viewBox="0 0 900 360" role="img" class="svg-sans"
+             aria-label="Over six seconds: the gap shrinks from 60 metres and flattens at about 7 metres. Ego speed holds at 14 metres per second until 2.75 seconds then ramps to zero by 4.5 seconds. The state is CLEAR until 1.8 seconds, WARN until 2.75 seconds, then BRAKE. The car stops 7 metres short and holds.">
+          <!-- axes -->
+          <line x1="55" y1="30" x2="55" y2="300" stroke="var(--line)" stroke-width="1"/>
+          <line x1="55" y1="300" x2="850" y2="300" stroke="var(--line)" stroke-width="1"/>
+          <g class="svg-mono" font-size="10" fill="var(--muted)" text-anchor="middle">
+            <text x="55" y="318">0</text><text x="185" y="318">1</text><text x="315" y="318">2</text>
+            <text x="445" y="318">3</text><text x="575" y="318">4</text><text x="705" y="318">5</text>
+            <text x="835" y="318">6 s</text>
+          </g>
+
+          <!-- gap curve -->
+          <polyline points="55,54 185,74 315,94 412,113 510,124 640,129 835,130"
+                    fill="none" stroke="var(--accent)" stroke-width="2.5"/>
+          <text x="70" y="48" font-size="11" fill="var(--accent-ink)">gap (m)   60 → 7</text>
+
+          <!-- v_ego -->
+          <polyline points="55,188 412,188 640,262 835,262"
+                    fill="none" stroke="var(--fuse)" stroke-width="2.5"/>
+          <text x="70" y="182" font-size="11" fill="var(--fuse-ink)">v_ego (m/s)   14 → 0</text>
+
+          <!-- state band -->
+          <rect x="55" y="270" width="234" height="18" fill="color-mix(in srgb, var(--clear) 45%, var(--surface))"/>
+          <rect x="289" y="270" width="123" height="18" fill="color-mix(in srgb, var(--warn) 50%, var(--surface))"/>
+          <rect x="412" y="270" width="423" height="18" fill="color-mix(in srgb, var(--brake) 42%, var(--surface))"/>
+          <text x="150" y="283" text-anchor="middle" font-size="10" fill="var(--ink)">CLEAR</text>
+          <text x="345" y="283" text-anchor="middle" font-size="10" fill="var(--ink)">WARN</text>
+          <text x="600" y="283" text-anchor="middle" font-size="10" fill="var(--ink)">BRAKE  (then hold)</text>
+
+          <!-- event markers -->
+          <g stroke="var(--muted)" stroke-width="1" stroke-dasharray="3 3">
+            <line x1="289" y1="30" x2="289" y2="270"/>
+            <line x1="412" y1="30" x2="412" y2="270"/>
+            <line x1="640" y1="30" x2="640" y2="270"/>
+          </g>
+          <g font-size="10.5" fill="var(--ink)">
+            <text x="293" y="42">WARN · TTC 2.3 s</text>
+            <text x="416" y="42">BRAKE · TTC 1.4 s</text>
+            <text x="600" y="42">stopped · 7 m · holds</text>
+          </g>
+        </svg>
+        </div>
+        <figcaption><b>The whole event is ~3 seconds.</b> WARN at t≈1.8 s gives ~1 s of
+          annunciation before BRAKE at t≈2.75 s; full braking pulls 14 m/s to 0 in about
+          1.7 s, stopping ~7 m short of the lead, then holds.</figcaption>
+      </figure>
+      <p class="say"><b>Say:</b> "It escalates CLEAR → WARN → BRAKE as time-to-collision
+        drops, brakes to a full stop with margin to spare, and holds. Disable the safety node
+        and the same run ends in a collision."</p>
+    </div>
+  </section>
+
+  <footer>
+    aeb_ros2_demo · companion to the interview notes · diagrams are hand-drawn SVG, theme-aware
+  </footer>
+
+</div>
