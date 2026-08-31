@@ -15,12 +15,36 @@ sim_node:
     scan_fov_deg: 60.0
     scan_rays: 121
     scan_noise_std: 0.03
+    radar_decim: 3
+    radar_range_std: 0.6
+    radar_rate_std: 0.12
+    radar_p_dropout: 0.12
+    radar_p_false: 0.03
+    radar_range_max: 120.0
 
 perception_node:
   ros__parameters:
     path_half_angle_deg: 4.0
-    range_rate_alpha: 0.4
+    range_rate_alpha: 0.35
     valid_margin: 0.98
+    range_var: 0.02
+    rate_var: 4.0
+
+radar_node:
+  ros__parameters:
+    range_var: 0.36
+    rate_var: 0.02
+    max_range: 120.0
+
+fusion_node:
+  ros__parameters:
+    sigma_a: 3.0
+    gate_chi2: 9.21
+    coast_timeout: 0.6
+    drop_timeout: 1.5
+    publish_rate: 50.0
+    r_var_init: 4.0
+    c_var_init: 100.0
 
 driver_node:
   ros__parameters:

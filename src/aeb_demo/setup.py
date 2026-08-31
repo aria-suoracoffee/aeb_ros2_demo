@@ -27,6 +27,8 @@ setup(
         "console_scripts": [
             "sim_node = aeb_demo.sim_node:main",
             "perception_node = aeb_demo.perception_node:main",
+            "radar_node = aeb_demo.radar_node:main",
+            "fusion_node = aeb_demo.fusion_node:main",
             "aeb_node = aeb_demo.aeb_node:main",
             "driver_node = aeb_demo.driver_node:main",
         ],

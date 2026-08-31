@@ -12,6 +12,8 @@ find_package(std_msgs REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Hazard.msg"
   "msg/AEBStatus.msg"
+  "msg/Measurement.msg"
+  "msg/RadarReturn.msg"
   DEPENDENCIES std_msgs
 )
 

@@ -40,6 +40,14 @@ def generate_launch_description():
             package="aeb_demo", executable="perception_node", name="perception_node",
             output="screen", parameters=[params],
         ),
+        Node(
+            package="aeb_demo", executable="radar_node", name="radar_node",
+            output="screen", parameters=[params],
+        ),
+        Node(
+            package="aeb_demo", executable="fusion_node", name="fusion_node",
+            output="screen", parameters=[params],
+        ),
 
         # AEB on: driver -> /driver/cmd_vel, supervised by aeb_node.
         Node(

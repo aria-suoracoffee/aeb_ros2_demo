@@ -30,6 +30,8 @@ from std_msgs.msg import Bool
 from tf2_ros import TransformBroadcaster
 from visualization_msgs.msg import Marker, MarkerArray
 
+from aeb_interfaces.msg import RadarReturn
+
 
 class SimNode(Node):
     def __init__(self):
@@ -50,6 +52,13 @@ class SimNode(Node):
         self.declare_parameter("scan_fov_deg", 60.0)      # deg
         self.declare_parameter("scan_rays", 121)
         self.declare_parameter("scan_noise_std", 0.03)    # m
+        # Radar: coarse range, good Doppler rate, plus dropouts and false alarms.
+        self.declare_parameter("radar_decim", 3)          # publish every Nth sim step
+        self.declare_parameter("radar_range_std", 0.6)    # m
+        self.declare_parameter("radar_rate_std", 0.12)    # m/s
+        self.declare_parameter("radar_p_dropout", 0.12)   # fraction of cycles with no return
+        self.declare_parameter("radar_p_false", 0.03)     # fraction with a spurious return
+        self.declare_parameter("radar_range_max", 120.0)  # m
 
         g = self.get_parameter
         self.dt = 1.0 / float(g("rate_hz").value)
@@ -67,8 +76,10 @@ class SimNode(Node):
             self.v_lead = max(0.0, self.v_ego - 8.0)  # default: 8 m/s slower than ego
         self.cmd_target_speed = self.v_ego
         self.collided = False
+        self._radar_count = 0
 
         self.scan_pub = self.create_publisher(LaserScan, "scan", 10)
+        self.radar_pub = self.create_publisher(RadarReturn, "radar", 10)
         self.odom_pub = self.create_publisher(Odometry, "ego/odom", 10)
         self.collision_pub = self.create_publisher(Bool, "sim/collision", 10)
         self.marker_pub = self.create_publisher(MarkerArray, "sim/markers", 10)
@@ -113,6 +124,9 @@ class SimNode(Node):
         self.collision_pub.publish(Bool(data=self.collided))
 
         self._publish_scan(max(gap, 0.0))
+        self._radar_count += 1
+        if self._radar_count % max(1, int(g("radar_decim").value)) == 0:
+            self._publish_radar(max(gap, 0.0), self.v_lead - self.v_ego)
         self._publish_odom()
         self._publish_tf()
         self._publish_markers()
@@ -158,6 +172,30 @@ class SimNode(Node):
             ranges.append(float(r))
         msg.ranges = ranges
         self.scan_pub.publish(msg)
+
+    def _publish_radar(self, gap: float, range_rate_true: float):
+        g = self.get_parameter
+        m = RadarReturn()
+        m.header.stamp = self.get_clock().now().to_msg()
+        m.header.frame_id = "ego_radar"
+
+        if random.random() < float(g("radar_p_dropout").value) or gap <= 0.1:
+            m.detected = False
+            self.radar_pub.publish(m)
+            return
+
+        if random.random() < float(g("radar_p_false").value):
+            # spurious return at a random range / rate
+            m.detected = True
+            m.range = random.uniform(4.0, float(g("radar_range_max").value))
+            m.range_rate = random.uniform(-28.0, 4.0)
+            self.radar_pub.publish(m)
+            return
+
+        m.detected = True
+        m.range = max(0.0, gap + random.gauss(0.0, float(g("radar_range_std").value)))
+        m.range_rate = range_rate_true + random.gauss(0.0, float(g("radar_rate_std").value))
+        self.radar_pub.publish(m)
 
     def _publish_odom(self):
         o = Odometry()
