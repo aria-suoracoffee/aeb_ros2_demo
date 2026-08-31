@@ -6,7 +6,7 @@
 #   scripts/run_demo.sh stationary_lead false
 #   scripts/run_demo.sh hard_brake
 #   scripts/run_demo.sh slower_lead
-set -euo pipefail
+set -eo pipefail   # not -u: ROS setup scripts reference unset variables
 
 SCENARIO="${1:-stationary_lead}"
 ENABLE_AEB="${2:-true}"
