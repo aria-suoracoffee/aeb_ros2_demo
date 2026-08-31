@@ -63,6 +63,8 @@ class SimNode(Node):
         self.v_lead = float(g("lead_speed").value)
         if self.scenario == "hard_brake" and self.v_lead == 0.0:
             self.v_lead = self.v_ego  # travel matched, then brake at lead_brake_time
+        elif self.scenario == "slower_lead" and self.v_lead == 0.0:
+            self.v_lead = max(0.0, self.v_ego - 8.0)  # default: 8 m/s slower than ego
         self.cmd_target_speed = self.v_ego
         self.collided = False
 

@@ -60,10 +60,33 @@ aeb_ros2_demo/
 │       ├── config/params.yaml
 │       ├── rviz/aeb.rviz
 │       └── test/test_safety.py
-└── scripts/install_ros2_humble.sh
+├── Dockerfile / .devcontainer/       # reproducible ROS 2 Humble environment
+└── scripts/{install_ros2_humble.sh, run_demo.sh}
 ```
 
-## Setup (WSL2 + Ubuntu 22.04)
+## Setup — Docker (recommended)
+
+Works on any Docker host (Linux VPS, macOS, Windows) and in GitHub Codespaces.
+Needs no ROS install on the host.
+
+```bash
+docker build -t aeb_demo .
+docker run -it --rm --shm-size=1g -v "$PWD":/ws -w /ws aeb_demo bash
+```
+
+`--shm-size=1g` matters: the default 64 MB `/dev/shm` starves FastDDS shared
+memory transport and the nodes silently fail to communicate.
+
+Inside the container:
+
+```bash
+colcon build && source install/setup.bash
+scripts/run_demo.sh stationary_lead
+```
+
+VS Code users: "Reopen in Container" uses `.devcontainer/` and builds on create.
+
+## Setup — native (WSL2 + Ubuntu 22.04)
 
 From Windows, install WSL2 with Ubuntu 22.04 if you don't have it:
 
@@ -91,45 +114,43 @@ source install/setup.bash
 
 ## Run
 
-Each scenario is one launch command. Watch the `aeb_node` log for the
-state transitions and `sim_node` for the closing gap.
+`scripts/run_demo.sh <scenario> <enable_aeb>` builds if needed and launches.
+Watch the `aeb_node` heartbeat (1 Hz) and state transitions.
 
 ```bash
-# 1. Stopped car 60 m ahead — AEB brings the ego to a stop before impact
-ros2 launch aeb_demo aeb_sim.launch.py scenario:=stationary_lead
+scripts/run_demo.sh stationary_lead true    # stopped car 60 m ahead -> AEB stops the ego
+scripts/run_demo.sh stationary_lead false   # AEB off -> ego drives into the lead (COLLISION)
+scripts/run_demo.sh hard_brake              # lead matches speed then brakes hard at t=4 s
+scripts/run_demo.sh slower_lead             # lead cruising 8 m/s slower than the ego
+```
 
-# 2. Same scenario, AEB disabled — the ego drives straight into the lead
-ros2 launch aeb_demo aeb_sim.launch.py scenario:=stationary_lead enable_aeb:=false
+Or call the launch file directly (e.g. to add RViz):
 
-# 3. Lead vehicle brakes hard from matched speed at t = 4 s
-ros2 launch aeb_demo aeb_sim.launch.py scenario:=hard_brake
-
-# 4. Slower-moving lead vehicle
-ros2 launch aeb_demo aeb_sim.launch.py scenario:=slower_lead enable_aeb:=true
-
-# Add RViz to any of the above
+```bash
 ros2 launch aeb_demo aeb_sim.launch.py scenario:=hard_brake rviz:=true
 ```
 
-Inspect topics from a second sourced shell:
+Inspect topics from a second shell (`docker exec -it <container> bash`, or a new
+sourced terminal):
 
 ```bash
 ros2 topic echo /aeb/status
-ros2 topic echo /aeb/hazard
 ros2 run rqt_graph rqt_graph
 ```
 
 ### What you should see (`stationary_lead`, AEB on)
 
 ```
-[sim_node]  t=  2.0  v_ego= 14.0  v_lead=  0.0  gap=  32.1
-[aeb_node]  CLEAR -> WARN   ttc=1.94s  req_decel=3.6 m/s^2  v_ego=14.0 m/s
-[aeb_node]  WARN -> BRAKE   ttc=1.15s  req_decel=6.1 m/s^2  v_ego=14.0 m/s
-[sim_node]  t=  4.5  v_ego=  3.2  v_lead=  0.0  gap=   4.0
-[sim_node]  t=  5.1  v_ego=  0.0  v_lead=  0.0  gap=   2.4     # stopped, no collision
+[aeb_node] [CLEAR] valid=True range=  45.4 v_close=13.5 ttc=3.4 v_ego=14.0 cmd=14.0
+[aeb_node] CLEAR -> WARN   ttc=2.36s  req_decel=3.2 m/s^2  v_ego=14.0 m/s
+[aeb_node] WARN -> BRAKE   ttc=1.42s  req_decel=5.7 m/s^2  v_ego=14.0 m/s
+[aeb_node] [BRAKE] valid=True range=  17.6 v_close=12.4 ttc=1.4 v_ego=12.1 cmd=0.0
+[aeb_node] [BRAKE] valid=True range=   8.6 v_close=-0.0 ttc=999.9 v_ego=0.0 cmd=0.0   # stopped
+[aeb_node] [BRAKE] valid=True range=   8.6 v_close= 0.2 ttc=  38.2 v_ego=0.0 cmd=0.0  # ...and held
 ```
 
-With `enable_aeb:=false` the same run ends in `COLLISION at t=... impact speed=14.0 m/s`.
+The ego stops ~8–9 m short and holds the brake. With `enable_aeb:=false` the
+same run ends in `COLLISION at t=... impact speed=14.0 m/s`.
 
 ## Tests
 
@@ -144,9 +165,6 @@ python3 -m pytest src/aeb_demo/test -q
 
 ## Design notes
 
-* **Closing speed from the sensor, not the map.** `perception_node`
-  differentiates the range signal and low-pass filters it. This mirrors how a
-  radar/lidar AEB works — you don't assume you know the lead vehicle's speed.
 * **Two brake gates (defense in depth).**
   * *TTC gate*: `range / closing_speed < ttc_brake`. Cheap, intuitive, but
     blind to how hard you'd actually have to brake.
@@ -154,10 +172,18 @@ python3 -m pytest src/aeb_demo/test -q
     Trips when `a_req` exceeds `brake_decel_frac · max_brake_decel`, i.e. when
     comfortable braking is no longer enough. Catches high-speed cases the TTC
     gate reacts to too late.
-* **Latching.** Once `BRAKE` is entered it holds until `v_ego < stop_speed`.
-  Real AEB is certified to not release mid-event; it also stops the state
-  chattering around the threshold.
+* **Hysteresis.** Leaving a more-severe state needs the signal to recover past
+  a `hysteresis` factor (1.25×). Without it the noisy `required_decel` estimate
+  chatters `WARN ↔ CLEAR` many times a second when it sits on the threshold.
+* **Brake latch + stop-and-hold.** `BRAKE` holds until `v_ego < stop_speed`,
+  then keeps holding (`cmd = 0`) while an obstacle stays within `hold_distance`.
+  This is what production "AEB stop and hold" does; it also stops the ego from
+  creeping forward again after the event (the stand-in driver keeps commanding
+  cruise speed). Releases when the obstacle clears.
 * **`standoff`** keeps the target stopping point ~2 m short of the obstacle.
+* **Closing speed from the sensor, not the map.** `perception_node`
+  differentiates the range signal and low-pass filters it — no dependence on
+  knowing the lead vehicle's speed.
 * **Separation of concerns.** All math is in `safety.py`; the nodes only do
   ROS I/O. That is what makes the logic testable without a running graph.
 
@@ -168,6 +194,12 @@ python3 -m pytest src/aeb_demo/test -q
 * First-order vehicle model; no actuator lag or brake-pressure ramp.
 * Fixed thresholds; a production system would schedule them on speed, road
   friction estimate, and driver-attention state.
+* Hysteresis damps *exiting* a state, not the first entry — you can still see a
+  single brief `CLEAR→WARN→CLEAR` flap at the boundary. WARN is advisory only
+  (no actuation), so this is cosmetic; the `BRAKE` decision does not flap.
+* `closing_speed` from finite-differencing has a ~0.5 m/s noise floor at these
+  settings; `min_closing_speed` gates it so a parked-car return doesn't
+  produce a phantom TTC.
 
 ## Possible extensions
 

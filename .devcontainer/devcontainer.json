@@ -1,0 +1,12 @@
+{
+  "name": "aeb_ros2_demo",
+  "build": { "dockerfile": "../Dockerfile", "context": ".." },
+  "runArgs": ["--shm-size=1g"],
+  "remoteUser": "root",
+  "postCreateCommand": "bash -lc 'source /opt/ros/humble/setup.bash && colcon build'",
+  "customizations": {
+    "vscode": {
+      "extensions": ["ms-python.python", "ms-iot.vscode-ros"]
+    }
+  }
+}
